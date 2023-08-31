@@ -37,44 +37,51 @@ provider = IBMQ.load_account()
 s = Fore.GREEN+"""
 
 ASI Research Project by Tohar Markovich
+Visualization Application
 \"Applications of topological quantum computation in improving novel cryptographic algorithms and protocols\"
 
 """
 
 def main():
-	init_screen()
+	print(s)
 	print("""
 1. BB84
 2. E91
 3. My algorithm
 	""")
-	choice = int(input("Pick a quantum cryptographic protocol: "))
-	s = input("Enter a string to secure: ")
+	choice = int(input("Pick a quantum cryptographic circuit to visualize: "))
 	match choice:
 		case 1:
-			algo_BB84(s)
+			algo_BB84()
 		case 2: 
-			algo_E91(s)
+			algo_E91()
 		case _:
-			my_algo(s)
-
-def init_screen():
-	print(s)
-	i = random.randint(1, 9)
-	qc = QuantumCircuit(i, i)
-	qc.x(1)
-	qc.h(range(i))
-	qc.cx(0, 1)
-	qc.measure(range(i), range(i))
-	print(qc)
+			my_algo()
 	
-def algo_BB84(s):
-	return
+def algo_BB84():
+	qc = QuantumCircuit(5, 5)
+	qc.x(0)
+	qc.h(0)
+	qc.h(1)
+	qc.x(3)
+	qc.h(4)
+	qc.barrier()
+	qc.h(2)
+	qc.h(3)
+	qc.h(4)
+	qc.barrier()
+	qc.h(1)
+	qc.h(2)
+	qc.barrier()
+	print(qc)
 
-def algo_E91(s):
-	return
+def algo_E91():
+	qc = QuantumCircuit(4, 4)
+	qc.h(0)
+	qc.cx(0, 1)
+	print(qc)
 
-def my_algo(s):
+def my_algo():
 	return
 
 if __name__ == '__main__':
