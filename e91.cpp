@@ -51,6 +51,9 @@ int main() {
     std::cout << ">> Excludes error correction and privacy amplification\n";
 
     // Actual E91 algorithm here
+    bases_states_T Alice_bases_states(n);
+
+    bases_states_T Bob_bases_states(n);
 }
 
 void display(const bases_states_T& Alice_bases_states,
@@ -103,7 +106,7 @@ void sift(bases_states_T& Alice_bases_states,
 }
 
 qpp::realT sample(bases_states_T& Alice_bases_states, 
-                  bases_states_T& Bob_bases_states) {
+                  bases_states_T& Bob_bases_states, qpp::idx k) {
     using namespace qpp;
     auto n = static_cast<idx>(Alice_bases_states.size());
 
