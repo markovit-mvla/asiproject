@@ -10,8 +10,7 @@ This project requires a C++17 compiler & python3.
 
 ### In order to run the algorithm visualizer:
 
-<code>
-cd algo-visualizer
+<code>cd algo-visualizer
 python3 crypqis.py
 </code>
 
