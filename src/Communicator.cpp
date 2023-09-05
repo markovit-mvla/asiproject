@@ -4,6 +4,7 @@
 */
 
 #include <iostream>
+
 #include "Communicator.hpp"
 
 template<typename T>
@@ -22,7 +23,7 @@ void Communicator<T>::display() {
     for (idx i = 0; i < n; ++i) {
         std::string state;
         if (states[i].first == 0)
-            state = std::to_string((*bases_states)[i].second);
+            state = std::to_string(states[i].second);
         else 
             state = states[i].second == 0 ? "+" : "-";
         std::cout << state << ' ';
