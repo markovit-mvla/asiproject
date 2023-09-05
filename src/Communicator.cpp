@@ -7,18 +7,25 @@
 
 #include "Communicator.hpp"
 
-template<typename T>
-Communicator<T>::Communicator(int nQubits, std::string s) {
-    bases_states = std::make_unique<typename Communicator<T>::bases_states_T>(static_cast<size_t>(nQubits));
-    key = std::make_unique<typename Communicator<T>::key_T>(static_cast<size_t>(nQubits));
+template<typename T, typename K>
+inline Communicator<T, K>::Communicator(int nQubits, std::string s) {
+    auto n = static_cast<size_t>(nQubits);
+    bases_states = std::make_unique<typename Communicator<T, K>::bases_states_T>(n);
+    key = std::make_unique<typename Communicator<T, K>::key_T>(n);
+    channel = std::make_shared<typename Communicator<T, K>::channel_T>();
     name = s;
 }
 
-template<typename T>
-void Communicator<T>::display() {
+template<typename T, typename K>
+inline Communicator<T, K>::Communicator(std::string s) {
+    name = s;
+}
+
+template<typename T, typename K>
+void Communicator<T, K>::display() {
     using namespace std;
     auto n = static_cast<idx>(bases_states->size());
-    const Communicator<T>::bases_states_T states = (*bases_states);
+    const Communicator<T, K>::bases_states_T states = (*bases_states);
     cout << name << "'s states:    ";
     for (idx i = 0; i < n; ++i) {
         std::string state;
@@ -35,18 +42,23 @@ void Communicator<T>::display() {
     cout << "\n";
 }
 
-template<typename T>
-typename Communicator<T>::key_T Communicator<T>::get_key() {
+template<typename T, typename K>
+inline void Communicator<T, K>::send(Qubit<K> qubit, Photon photon, Communicator<T, K> &endpoint) {
+    (*endpoint.channel).emplace_back(static_cast<std::pair<Qubit<K>, Photon>>(std::make_pair(qubit, photon)));
+}
+
+template<typename T, typename K>
+typename Communicator<T, K>::key_T Communicator<T, K>::get_key() {
     auto n = static_cast<idx>(bases_states->size());
-    const Communicator<T>::bases_states_T states = (*bases_states);
-    Communicator<T>::key_T result(n);
+    const Communicator<T, K>::bases_states_T states = (*bases_states);
+    Communicator<T, K>::key_T result(n);
     for (idx i = 0; i < n; ++i)
         result[i] = states[i].second;
     return result;
 }
 
-template<typename T>
-Communicator<T>::~Communicator() {
+template<typename T, typename K>
+inline Communicator<T, K>::~Communicator() {
     bases_states.reset();
     key.reset();
 }

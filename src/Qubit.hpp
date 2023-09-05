@@ -5,11 +5,12 @@
 
 #include "util.h"
 
+template<typename K>
 class Qubit {
     private:
-        std::string to_encode;
+        K data_to_encode;
+        K encode(K data_to_encode);
     public:
-        Qubit(std::string to_encode) { this->to_encode = to_encode; }
-        void encode();
-        ~Qubit() = default;
+        inline Qubit(K data_to_encode);
+        inline ~Qubit() = default;
 };
