@@ -26,23 +26,23 @@ inline Communicator<T, K>::Communicator(std::string s) {
 
 template<typename T, typename K>
 void Communicator<T, K>::display() {
-    using namespace std;
+    using namespace qpp;
     auto n = static_cast<idx>(bases_states->size());
     const Communicator<T, K>::bases_states_T states = (*bases_states);
-    cout << name << "'s states:    ";
+    std::cout << name << "'s states:    ";
     for (idx i = 0; i < n; ++i) {
-        string state;
+        std::string state;
         if (states[i].first == 0)
             state = to_string(states[i].second);
         else 
             state = states[i].second == 0 ? "+" : "-";
-        cout << state << ' ';
+        std::cout << state << ' ';
     }
-    cout << "\n";
-    cout << name << "'s bases:    ";
+    std::cout << "\n";
+    std::cout << name << "'s bases:    ";
     for (idx i = 0; i < n; ++i)
-        cout << (states[i].first == 0 ? 'Z' : 'X') << ' ';
-    cout << "\n";
+        std::cout << (states[i].first == 0 ? 'Z' : 'X') << ' ';
+    std::cout << "\n";
 }
 
 template<typename T, typename K>
@@ -52,6 +52,7 @@ inline void Communicator<T, K>::send(Qubit<K> qubit, Photon photon, Communicator
 
 template<typename T, typename K>
 typename Communicator<T, K>::key_T Communicator<T, K>::get_key() {
+    using namespace qpp;
     auto n = static_cast<idx>(bases_states->size());
     const Communicator<T, K>::bases_states_T states = (*bases_states);
     Communicator<T, K>::key_T result(n);
