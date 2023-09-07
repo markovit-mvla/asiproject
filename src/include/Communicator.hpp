@@ -9,7 +9,7 @@
 
 #include "Qubit.hpp"
 #include "Photon.h"
-#include "util.h"
+#include "../dependencies/qpp/include/qpp.h"
 
 // T - type of bases states
 // K - type of Qubit data to encode

@@ -4,8 +4,6 @@
 #include <string>
 #include <memory>
 
-#include "util.h"
-
 template<typename K>
 class Qubit {
     private:
