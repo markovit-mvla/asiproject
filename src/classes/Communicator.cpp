@@ -8,12 +8,15 @@
 #include "Communicator.hpp"
 
 template<typename T, typename K>
+std::shared_ptr<typename Communicator<T, K>::channel_T> Communicator<T, K>::channel = 
+    std::make_shared<typename Communicator<T, K>::channel_T>();
+
+template<typename T, typename K>
 inline Communicator<T, K>::Communicator(int nQubits, std::string s) {
     Communicator(s);
     auto n = static_cast<size_t>(nQubits);
     bases_states = std::make_unique<typename Communicator<T, K>::bases_states_T>(n);
     key = std::make_unique<typename Communicator<T, K>::key_T>(n);
-    channel = std::make_shared<typename Communicator<T, K>::channel_T>();
 }
 
 template<typename T, typename K>

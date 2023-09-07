@@ -21,7 +21,7 @@ class Communicator {
         using channel_T = std::vector<std::pair<Qubit<K>, Photon>>;
         std::unique_ptr<bases_states_T> bases_states; // States for entanglement & transformations
         std::unique_ptr<key_T> key;                   // Collection of data sent on channel
-        std::shared_ptr<channel_T> channel;           // Channel itself for communication
+        static std::shared_ptr<channel_T> channel;    // Channel itself for communication
         std::string name;                             // Name of Communicator
     public:   
         inline Communicator(int nQubits, std::string s);
