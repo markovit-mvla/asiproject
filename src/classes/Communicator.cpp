@@ -47,7 +47,7 @@ void Communicator<T, K>::display() {
 
 template<typename T, typename K>
 inline void Communicator<T, K>::send(Qubit<K> qubit, Photon photon, Communicator<T, K> &endpoint) {
-    (*endpoint.channel).emplace_back(static_cast<std::pair<Qubit<K>, Photon>>(std::make_pair(qubit, photon)));
+    channel.emplace_back(static_cast<std::pair<Qubit<K>, Photon>>(std::make_pair(qubit, photon)));
 }
 
 template<typename T, typename K>
@@ -59,6 +59,11 @@ typename Communicator<T, K>::key_T Communicator<T, K>::get_key() {
     for (idx i = 0; i < n; ++i)
         result[i] = states[i].second;
     return result;
+}
+
+template<typename T, typename K>
+inline typename Communicator<T, K>::bases_states_T get_bases_states() {
+    return (*bases_states);
 }
 
 template<typename T, typename K>

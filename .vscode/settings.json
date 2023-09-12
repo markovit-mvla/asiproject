@@ -99,7 +99,8 @@
     "thread": "cpp",
     "cinttypes": "cpp",
     "any": "cpp",
-    "hash_map": "cpp"
+    "hash_map": "cpp",
+    "*.ipp": "cpp"
   },
   "C_Cpp_Runner.cCompilerPath": "gcc",
   "C_Cpp_Runner.cppCompilerPath": "g++",
