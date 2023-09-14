@@ -1,3 +1,8 @@
+/**
+ * @author tohar
+ * @brief bb84 quantum key transfer algorithm 
+*/
+
 #include <cstdlib>
 
 #include "include/Communicator.hpp"

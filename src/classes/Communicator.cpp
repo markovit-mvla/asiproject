@@ -20,11 +20,6 @@ inline Communicator<T, K>::Communicator(int nQubits, std::string s) {
 }
 
 template<typename T, typename K>
-inline Communicator<T, K>::Communicator(std::string s) {
-    name = s;
-}
-
-template<typename T, typename K>
 void Communicator<T, K>::display() {
     using namespace qpp;
     auto n = static_cast<idx>(bases_states->size());

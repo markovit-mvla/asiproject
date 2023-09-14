@@ -1,3 +1,8 @@
+/**
+ * @author tohar
+ * @brief qubit class to simulate quantum bit logic
+*/
+
 #include <iostream>
 
 #include "Qubit.hpp"

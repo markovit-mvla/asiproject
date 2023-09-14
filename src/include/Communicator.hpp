@@ -25,7 +25,7 @@ class Communicator {
         std::string name;                                                 // Name of Communicator
     public:    
         inline Communicator(int nQubits, std::string s);
-        inline Communicator(std::string s);
+        inline Communicator(std::string s) : name(s) {}
         void display();
         inline void send(Qubit<K> qubit, Photon photon, Communicator<T, K> &endpoint);
         key_T get_key();
