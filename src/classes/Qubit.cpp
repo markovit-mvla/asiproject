@@ -2,12 +2,16 @@
 
 #include "Qubit.hpp"
 
-template<typename K>
-inline Qubit<K>::Qubit(K data_to_encode) {
-    this->data_to_encode = encode(data_to_encode);
-}
-
+/**
+ * @todo Figure out how to encode the data using the photon
+*/
 template<typename K>
 K Qubit<K>::encode(K data_to_encode) {
     return data_to_encode;
+}
+
+template<typename K>
+void Qubit<K>::apply_photon(const Photon& photon) {
+    if (photon->polarization) 
+        state = !state;
 }

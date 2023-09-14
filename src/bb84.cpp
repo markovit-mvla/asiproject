@@ -12,12 +12,14 @@ void sift(const Communicator<T, K>* alice, const Communicator<T, K>* bob);
 template<typename T, typename K>
 qpp::realT 
 sample(Communicator<T, K>* alice, Communicator<T, K>* bob, 
-       qpp::idx k);
+    qpp::idx k);
 
 template<typename T, typename K>
-Communicator<state_T, data_T>::key_T 
-final(const Communicator<T, K>* alice, const Communicator<T, K>* bob, 
-      qpp::idx k);
+auto final(const Communicator<T, K>* alice, const Communicator<T, K>* bob, 
+    qpp::idx k);
+
+template<typename T, typename K>
+inline void display(const Communicator<T, K>* alice, const Communicator<T, K>* bob);
 
 int main() 
 {
@@ -135,7 +137,7 @@ int main()
 }
 
 template<typename T, typename K>
-void display(const Communicator<T, K>* alice, const Communicator<T, K>* bob) {
+inline void display(const Communicator<T, K>* alice, const Communicator<T, K>* bob) {
     alice->display();
     bob->display();
 }
@@ -160,7 +162,7 @@ void sift(const Communicator<T, K>* alice, const Communicator<T, K>* bob) {
 template<typename T, typename K>
 qpp::realT
 sample(Communicator<T, K>* alice, Communicator<T, K>* bob, 
-       qpp::idx k) {
+    qpp::idx k) {
     using namespace qpp;
     auto n = static_cast<idx>(alice_bases_states.size());
     auto alice_bases_states = alice->get_bases_states();
@@ -223,9 +225,8 @@ sample(Communicator<T, K>* alice, Communicator<T, K>* bob,
 }
 
 template<typename T, typename K>
-typename Communicator<T, K>::key_T 
-final(const Communicator<T, K>* alice, const Communicator<T, K>* bob, 
-      qpp::idx k) {
+auto final(const Communicator<T, K>* alice, const Communicator<T, K>* bob, 
+    qpp::idx k) {
     using namespace qpp;
     auto n = static_cast<idx>(alice_raw_key.size());
     auto alice_raw_key = alice->get_key();
