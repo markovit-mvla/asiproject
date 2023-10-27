@@ -100,7 +100,19 @@
     "cinttypes": "cpp",
     "any": "cpp",
     "hash_map": "cpp",
-    "*.ipp": "cpp"
+    "*.ipp": "cpp",
+    "filesystem": "cpp",
+    "__hash": "cpp",
+    "core": "cpp",
+    "qtalignedmalloc": "cpp",
+    "*.inc": "cpp",
+    "fft": "cpp",
+    "*.traits": "cpp",
+    "alignedvector3": "cpp",
+    "matrixfunctions": "cpp",
+    "nnls": "cpp",
+    "nonlinearoptimization": "cpp",
+    "openglsupport": "cpp"
   },
   "C_Cpp_Runner.cCompilerPath": "gcc",
   "C_Cpp_Runner.cppCompilerPath": "g++",
@@ -130,5 +142,9 @@
     "**/.*/**",
     "**/.vscode",
     "**/.vscode/**"
-  ]
+  ],
+  "rust-analyzer.linkedProjects": [
+    "./qrust/Cargo.toml"
+  ],
+  "rust-analyzer.showUnlinkedFileNotification": false
 }

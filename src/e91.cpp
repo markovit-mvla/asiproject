@@ -1,9 +1,22 @@
+/**
+ * @author tohar
+ * @brief e91 quantum key transfer algorithm 
+*/
+
 #include <cstdlib>
 
 #include "Communicator.hpp"
 
 using state_T = short;
+using basis_T = short;
 using data_T = std::string;
+
+template<typename T, typename K>
+auto final(const Communicator<T, K>* alice, const Communicator<T, K>* bob, 
+    qpp::idx k);
+
+template<typename T, typename K>
+inline void display(const Communicator<T, K>* alice, const Communicator<T, K>* bob);
 
 int main()
 {

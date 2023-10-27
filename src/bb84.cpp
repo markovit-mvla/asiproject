@@ -56,7 +56,7 @@ int main()
         state_T state = bernoulli() ? 0 : 1;
         elem = std::make_pair(basis, state);
     }
-
+    
     auto bob_bases_states = bob->get_bases_states();
     for (auto& elem : bob_bases_states) {
         // chose a random basis, 0 -> Z basis, 1 -> X basis
@@ -233,9 +233,9 @@ template<typename T, typename K>
 auto final(const Communicator<T, K>* alice, const Communicator<T, K>* bob, 
     qpp::idx k) {
     using namespace qpp;
-    auto n = static_cast<idx>(alice_raw_key.size());
     auto alice_raw_key = alice->get_key();
     auto bob_raw_key = bob->get_key();
+    auto n = static_cast<idx>(alice_raw_key.size());
     typename Communicator<T, K>::key_T result;
     for (idx i = 0; i < n; ++i) {
         if (alice_raw_key[i] != bob_raw_key[i]) 
