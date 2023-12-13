@@ -4,6 +4,7 @@ import os
 import time
 import warnings
 import random
+import re
 
 os.system("pip install tk");
 os.system("pip install qiskit")
@@ -18,12 +19,9 @@ from tkinter import ttk
 
 from qiskit import IBMQ, QuantumCircuit, Aer, execute, \
 	QuantumRegister, ClassicalRegister, BasicAer
-from qiskit.tools.visualization import plot_histogram, plot_bloch_multivector
-from qiskit.circuit.random import random_circuit
-from qiskit.tools import job_monitor
+from qiskit.tools.visualization import circuit_drawer, plot_histogram, plot_bloch_multivector
 
 import numpy as np
-
 
 # Model
 
@@ -54,7 +52,7 @@ def BB84(n, with_eavesdropper, with_losses,
     
     # Need to send Alice's output state to Bob
     bob = QuantumCircuit(qr, cr, name='Bob')
-    SendState(alice, bob, 'Alice', qr)
+    SendState(alice, bob, qr)
 
     bob_table = []
     for index in range(len(qr)):
@@ -80,7 +78,7 @@ def BB84(n, with_eavesdropper, with_losses,
     
     if with_eavesdropper:
         eve = QuantumCircuit(qr, cr, name='Eve')
-        SendState(alice, eve, 'Alice', qr)
+        SendState(alice, eve, qr)
 
         eve_table = []
         for index in range(len(qr)):
@@ -114,7 +112,7 @@ def BB84(n, with_eavesdropper, with_losses,
                         eve.x(qr[qubit])
                         eve.h(qr[qubit])
 
-        SendState(eve, bob, 'Eve', qr)
+        SendState(eve, bob, qr)
 
         bob_table = []
         for index in range(len(qr)):
@@ -176,7 +174,7 @@ def table_checks(table1, table2, key1, key2, with_eavesdropper, n):
         print("New Alice's key is invalid: ", new_alice_key)
         print("New Bob's key is invalid: ", new_bob_key)
 
-def SendState(qc1, qc2, qc1_name, qr):
+def SendState(qc1, qc2, qr):
     ''' 
     * Function takes output of qc1 and initializes qc2 with the same state
     '''
@@ -199,7 +197,62 @@ def SendState(qc1, qc2, qc1_name, qr):
         else:
             raise Exception('Unable to parse instruction')
 
-BB84(16, False, True, True, True)
+BB84(24, True, True, True, True)
+
+def E91(n, with_eavesdropper, with_losses,
+        with_perturbations, with_sop_uncertainty):
+    qr = QuantumRegister(2, name='qr')
+    cr = ClassicalRegister(4, name='cr')
+    singlet = QuantumCircuit(qr, cr, name='singlet')
+    singlet.x(qr[0])
+    singlet.x(qr[1])
+    singlet.h(qr[0])
+    singlet.cx(qr[0], qr[1])
+    
+    ## Alice's Measurement Circuits
+
+    # Measure X basis
+    measureX = QuantumCircuit(qr, cr, name='measureX')
+    measureX.h(qr[0])
+    measureX.measure(qr[0], cr[0])
+
+    # Measure W basis A2 Direction
+    measureW2 = QuantumCircuit(qr, cr, name='measureW2')
+    measureW2.s(qr[0])
+    measureW2.h(qr[0])
+    measureW2.t(qr[0])
+    measureW2.h(qr[0])
+    measureW2.measure(qr[0], cr[0])
+
+    # Measure Standard Z basis A3 Direction
+    measureZ3 = QuantumCircuit(qr, cr, name='measureZ3')
+    measureZ3.measure(qr[0], cr[0])
+
+    ## Bob's Measurement Circuits
+
+    # Measure W basis B1 Direction
+    measureW1 = QuantumCircuit(qr, cr, name='measureW1')
+    measureW1.s(qr[1])
+    measureW1.h(qr[1])
+    measureW1.t(qr[1])
+    measureW1.h(qr[1])
+    measureW1.measure(qr[1], cr[1])
+
+    # Measure Standard Z basis B2 Direction
+    measureZ2 = QuantumCircuit(qr, cr, name='measureZ2')
+    measureZ2.measure(qr[1], cr[1])
+
+    # Measure V basis
+    measureV = QuantumCircuit(qr, cr, name='measureV')
+    measureV.s(qr[1])
+    measureV.h(qr[1])
+    measureV.tdg(qr[1])
+    measureV.h(qr[1])
+    measureV.measure(qr[1],cr[1])
+
+    ## Resulting Measurements
+
+E91(24, False, True, True, True)
 
 warnings.filterwarnings("ignore")
 # IBMQ.save_account('523b6817788914242ceb116ea37ad233af538d961434929fdcee0a827153ab2d612bbf3d1c01865d532a87c114349fe741203c800d346a8f81ca34960c857f96')
