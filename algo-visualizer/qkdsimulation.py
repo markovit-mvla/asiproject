@@ -27,8 +27,16 @@ import numpy as np
 
 Aer._allow_object_storage = True
 
+system_parameters = []
+protocol = ""
+settings = {}
+num_qubits = 0
+
 def BB84(n, with_eavesdropper, with_losses, 
-        with_perturbations, with_sop_uncertainty):
+        with_perturbations, with_sop_uncertainty, 
+        source_generation_rate, source_efficiency, 
+        fiber_length, fiber_loss, detector_efficiency, 
+        perturb_probability, sop_mean_deviation):
     qr = QuantumRegister(n, name='qr')
     cr = ClassicalRegister(n, name='cr')
 
@@ -36,7 +44,7 @@ def BB84(n, with_eavesdropper, with_losses,
     alice_key = np.random.randint(0, high=2**n) # Gen random number in available range of Qubits
     alice_key = np.binary_repr(alice_key, n) # Cast key to binary for encoding
 
-    # Encode key as alice qubits
+    # Encode key as alice qubitsD
     for index, digit in enumerate(alice_key):
         if digit == '1':
             alice.x(qr[index]) # If key has '1', change state to |1>
@@ -197,62 +205,14 @@ def SendState(qc1, qc2, qr):
         else:
             raise Exception('Unable to parse instruction')
 
-BB84(24, True, True, True, True)
+#BB84(24, True, True, True, True, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0)
 
-def E91(n, with_eavesdropper, with_losses,
-        with_perturbations, with_sop_uncertainty):
-    qr = QuantumRegister(2, name='qr')
-    cr = ClassicalRegister(4, name='cr')
-    singlet = QuantumCircuit(qr, cr, name='singlet')
-    singlet.x(qr[0])
-    singlet.x(qr[1])
-    singlet.h(qr[0])
-    singlet.cx(qr[0], qr[1])
-    
-    ## Alice's Measurement Circuits
+def TM99(n):
+    qr = QuantumRegister(n, name="qr")
+    cr = ClassicalRegister(n, name="cr")
 
-    # Measure X basis
-    measureX = QuantumCircuit(qr, cr, name='measureX')
-    measureX.h(qr[0])
-    measureX.measure(qr[0], cr[0])
-
-    # Measure W basis A2 Direction
-    measureW2 = QuantumCircuit(qr, cr, name='measureW2')
-    measureW2.s(qr[0])
-    measureW2.h(qr[0])
-    measureW2.t(qr[0])
-    measureW2.h(qr[0])
-    measureW2.measure(qr[0], cr[0])
-
-    # Measure Standard Z basis A3 Direction
-    measureZ3 = QuantumCircuit(qr, cr, name='measureZ3')
-    measureZ3.measure(qr[0], cr[0])
-
-    ## Bob's Measurement Circuits
-
-    # Measure W basis B1 Direction
-    measureW1 = QuantumCircuit(qr, cr, name='measureW1')
-    measureW1.s(qr[1])
-    measureW1.h(qr[1])
-    measureW1.t(qr[1])
-    measureW1.h(qr[1])
-    measureW1.measure(qr[1], cr[1])
-
-    # Measure Standard Z basis B2 Direction
-    measureZ2 = QuantumCircuit(qr, cr, name='measureZ2')
-    measureZ2.measure(qr[1], cr[1])
-
-    # Measure V basis
-    measureV = QuantumCircuit(qr, cr, name='measureV')
-    measureV.s(qr[1])
-    measureV.h(qr[1])
-    measureV.tdg(qr[1])
-    measureV.h(qr[1])
-    measureV.measure(qr[1],cr[1])
-
-    ## Resulting Measurements
-
-E91(24, False, True, True, True)
+    alice = QuantumCircuit(qr, cr, name="Alice")
+    bob = QuantumCircuit(qr, cr, name="Alice")
 
 warnings.filterwarnings("ignore")
 # IBMQ.save_account('523b6817788914242ceb116ea37ad233af538d961434929fdcee0a827153ab2d612bbf3d1c01865d532a87c114349fe741203c800d346a8f81ca34960c857f96')
@@ -297,12 +257,25 @@ class QuantumSimulatorApp:
             "SOP Mean Deviation"
         ]
 
+        self.entries = []
+
         for i, param in enumerate(params):
             label = ttk.Label(frame, text=param + ": ")
             label.grid(row=i, column=0, padx=5, pady=5, sticky="e")
 
             entry = ttk.Entry(frame)
             entry.grid(row=i, column=1, padx=5, pady=5, sticky="w")
+
+            self.entries.append(entry)
+
+        save_button = ttk.Button(frame, text="Submit System Parameters", command=self.save_data)
+        save_button.grid(row=len(params), columnspan=2, padx=5, pady=10)
+
+    def save_data(self):
+        print("System parameters: ")
+        for entry in self.entries:
+            system_parameters.append(entry.get())
+            print(entry.get())
 
     def create_multiple_system_parameters(self):
         frame = ttk.LabelFrame(self.tab2, text="Parameters")
@@ -329,28 +302,44 @@ class QuantumSimulatorApp:
         protocol_label.grid(row=0, column=0, padx=5, pady=5, sticky="e")
 
         protocol_values = ["BB84", "E91", "TM99"]
-        protocol_dropdown = ttk.Combobox(frame, values=protocol_values)
-        protocol_dropdown.grid(row=0, column=1, padx=5, pady=5, sticky="w")
-        protocol_dropdown.set(protocol_values[0])
+        self.protocol_dropdown = ttk.Combobox(frame, values=protocol_values)
+        self.protocol_dropdown.grid(row=0, column=1, padx=5, pady=5, sticky="w")
+        self.protocol_dropdown.set(protocol_values[0])
 
         settings = ["Losses Enabled", "Perturbations Enabled", "Eavesdropping Enabled",
                     "SOP Uncertainty Enabled"]
 
+        self.checkboxes = []
+
         for i, setting in enumerate(settings):
             checkbox = ttk.Checkbutton(frame, text=setting)
             checkbox.grid(row=i + 1, column=0, columnspan=2, padx=5, pady=2, sticky="w")
+            self.checkboxes.append(checkbox)
 
         num_qubits_label = ttk.Label(frame, text="Number of Qubits: ")
         num_qubits_label.grid(row=len(settings) + 1, column=0, padx=5, pady=5, sticky="e")
 
-        num_qubits_entry = ttk.Entry(frame)
-        num_qubits_entry.grid(row=len(settings) + 1, column=1, padx=5, pady=5, sticky="w")
+        self.num_qubits_entry = ttk.Entry(frame) # num qubits
+        self.num_qubits_entry.grid(row=len(settings) + 1, column=1, padx=5, pady=5, sticky="w")
 
         qber_label = ttk.Label(frame, text="QBER Cross-Check Fraction: ")
         qber_label.grid(row=len(settings) + 2, column=0, padx=5, pady=5, sticky="e")
 
-        qber_entry = ttk.Entry(frame)
-        qber_entry.grid(row=len(settings) + 2, column=1, padx=5, pady=5, sticky="w")
+        self.qber_entry = ttk.Entry(frame)
+        self.qber_entry.grid(row=len(settings) + 2, column=1, padx=5, pady=5, sticky="w")
+
+        save_button = ttk.Button(frame, text="Submit Simulation Settings", command=self.save_simulation_settings)
+        save_button.grid(row=len(settings) + 3, columnspan=2, padx=5, pady=10)
+
+    def save_simulation_settings(self):
+        print("Simulation Settings: ")
+        print("Protocol:", self.protocol_dropdown.get())
+        for checkbox in self.checkboxes:
+            print(checkbox.cget("text"), checkbox.instate(['selected']))
+            settings[checkbox.cget("text")] = checkbox.instate(['selected'])
+        print("Number of Qubits:", self.num_qubits_entry.get())
+
+        print("QBER Cross-Check Fraction:", self.qber_entry.get())
 
     def create_results(self):
         frame = ttk.LabelFrame(self.tab1, text="Results")

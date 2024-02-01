@@ -41,11 +41,6 @@ char* BB84() {
     return '0';
 }
 
-char* E91();
-char* E91() {
-    return '0';
-}
-
 char* TM99();
 char* TM99() {
     return '0';
