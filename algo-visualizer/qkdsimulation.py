@@ -27,11 +27,6 @@ import numpy as np
 
 Aer._allow_object_storage = True
 
-system_parameters = []
-protocol = ""
-settings = {}
-num_qubits = 0
-
 def BB84(n, with_eavesdropper, with_losses, 
         with_perturbations, with_sop_uncertainty, 
         source_generation_rate, source_efficiency, 
@@ -207,7 +202,11 @@ def SendState(qc1, qc2, qr):
 
 #BB84(24, True, True, True, True, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0)
 
-def TM99(n):
+def TM99(n, with_eavesdropper, with_losses, 
+        with_perturbations, with_sop_uncertainty, 
+        source_generation_rate, source_efficiency, 
+        fiber_length, fiber_loss, detector_efficiency, 
+        perturb_probability, sop_mean_deviation):
     qr = QuantumRegister(n, name="qr")
     cr = ClassicalRegister(n, name="cr")
 
@@ -222,6 +221,12 @@ warnings.filterwarnings("ignore")
 
 class QuantumSimulatorApp:
     def __init__(self, root):
+        self.system_parameters = []
+        self.protocol = ""
+        self.settings = {}
+        self.num_qubits = 0
+        self.qber_cross_check = 0
+
         self.root = root
         self.root.title("Quantum Simulator")
 
@@ -274,7 +279,7 @@ class QuantumSimulatorApp:
     def save_data(self):
         print("System parameters: ")
         for entry in self.entries:
-            system_parameters.append(entry.get())
+            self.system_parameters.append(entry.get())
             print(entry.get())
 
     def create_multiple_system_parameters(self):
@@ -334,12 +339,14 @@ class QuantumSimulatorApp:
     def save_simulation_settings(self):
         print("Simulation Settings: ")
         print("Protocol:", self.protocol_dropdown.get())
+        self.protocol = self.protocol_dropdown.get();
         for checkbox in self.checkboxes:
             print(checkbox.cget("text"), checkbox.instate(['selected']))
-            settings[checkbox.cget("text")] = checkbox.instate(['selected'])
+            self.settings[checkbox.cget("text")] = checkbox.instate(['selected'])
         print("Number of Qubits:", self.num_qubits_entry.get())
-
+        self.num_qubits = self.num_qubits_entry.get()
         print("QBER Cross-Check Fraction:", self.qber_entry.get())
+        self.qber_cross_check = self.qber_entry.get()
 
     def create_results(self):
         frame = ttk.LabelFrame(self.tab1, text="Results")
@@ -355,14 +362,24 @@ class QuantumSimulatorApp:
             entry.grid(row=i, column=1, padx=5, pady=5, sticky="w")
 
         run_button = ttk.Button(frame, text="Run Simulation", command=self.run_simulation)
-        run_button.grid(row=len(results), column=0, columnspan=2, pady=10)
+        run_button.grid(row=0, column=2, columnspan=2, pady=10)
 
         view_button = ttk.Button(frame, text="View Sample", command=self.view_sample)
-        view_button.grid(row=len(results) + 1, column=0, columnspan=2, pady=5)
+        view_button.grid(row=1, column=2, columnspan=2, pady=5, sticky="we")
 
     def run_simulation(self):
-        # Implement the logic for running the simulation here
-        pass
+        if "BB84" == self.protocol:
+            BB84(int(self.num_qubits), self.settings["Eavesdropping Enabled"], self.settings["Losses Enabled"], self.settings["Perturbations Enabled"], 
+                self.settings["SOP Uncertainty Enabled"], self.system_parameters[0], self.system_parameters[1], self.system_parameters[2], self.system_parameters[3], 
+                self.system_parameters[4], self.system_parameters[5], self.system_parameters[6])
+            # Need to save the results either by returning them or saving in a variable
+            # Need Key Length, Key Rate, and QBER
+        elif "TM99" == self.protocol:
+            TM99(self.num_qubits, self.settings["Eavesdropping Enabled"], self.settings["Losses Enabled"], self.settings["Perturbations Enabled"], 
+                self.settings["SOP Uncertainty Enabled"], self.system_parameters[0], self.system_parameters[1], self.system_parameters[2], self.system_parameters[3], 
+                self.system_parameters[4], self.system_parameters[5], self.system_parameters[6])
+        else:
+            print("Not enough data provided to run protocol")
 
     def view_sample(self):
         # Implement the logic for viewing the sample here
