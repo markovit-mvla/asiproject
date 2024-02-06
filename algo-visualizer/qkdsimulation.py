@@ -48,8 +48,12 @@ def BB84(n, with_eavesdropper, with_losses,
     alice_table = []
     for index in range(len(qr)):
         if 0.5 < np.random.random(): # 50% chance
-            alice.h(qr[index])
-            alice_table.append('X')
+            if perturb_probability > np.random.random():
+                alice_table.append('Z')
+                continue
+            else:
+                alice.h(qr[index])
+                alice_table.append('X')
         else:
             alice_table.append('Z')
     
@@ -60,8 +64,12 @@ def BB84(n, with_eavesdropper, with_losses,
     bob_table = []
     for index in range(len(qr)):
         if 0.5 < np.random.random(): # 50% chance
-            bob.h(qr[index])
-            bob_table.append('X')
+            if perturb_probability > np.random.random():
+                bob_table.append('Z')
+                continue
+            else:
+                bob.h(qr[index])
+                bob_table.append('X')
         else:
             bob_table.append('Z')
 
@@ -86,8 +94,12 @@ def BB84(n, with_eavesdropper, with_losses,
         eve_table = []
         for index in range(len(qr)):
             if 0.5 < np.random.random():
-                eve.h(qr[index])
-                eve_table.append('X')
+                if perturb_probability > np.random.random():
+                    eve_table.append('Z')
+                    continue
+                else:
+                    eve.h(qr[index])
+                    eve_table.append('X')
             else:
                 eve_table.append('Z')
 
@@ -120,8 +132,12 @@ def BB84(n, with_eavesdropper, with_losses,
         bob_table = []
         for index in range(len(qr)):
             if 0.5 < np.random.random():
-                bob.h(qr[index])
-                bob_table.append('X')
+                if perturb_probability > np.random.random():
+                    bob_table.append('Z')
+                    continue
+                else:
+                    bob.h(qr[index])
+                    bob_table.append('X')
             else:
                 bob_table.append('Z')
 
@@ -371,7 +387,7 @@ class QuantumSimulatorApp:
         if "BB84" == self.protocol:
             BB84(int(self.num_qubits), self.settings["Eavesdropping Enabled"], self.settings["Losses Enabled"], self.settings["Perturbations Enabled"], 
                 self.settings["SOP Uncertainty Enabled"], self.system_parameters[0], self.system_parameters[1], self.system_parameters[2], self.system_parameters[3], 
-                self.system_parameters[4], self.system_parameters[5], self.system_parameters[6])
+                self.system_parameters[4], float(self.system_parameters[5]), self.system_parameters[6])
             # Need to save the results either by returning them or saving in a variable
             # Need Key Length, Key Rate, and QBER
         elif "TM99" == self.protocol:
