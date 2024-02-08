@@ -3,7 +3,6 @@
 import os
 import time
 import warnings
-import random
 import re
 
 os.system("pip install tk");
@@ -29,9 +28,11 @@ Aer._allow_object_storage = True
 
 def BB84(n, with_eavesdropper, with_losses, 
         with_perturbations, with_sop_uncertainty, 
-        source_generation_rate, source_efficiency, 
-        fiber_length, fiber_loss, detector_efficiency, 
+        source_generation_rate, fiber_length, 
+        fiber_loss, detector_efficiency, 
         perturb_probability, sop_mean_deviation):
+    start = time.time()
+    
     qr = QuantumRegister(n, name='qr')
     cr = ClassicalRegister(n, name='cr')
 
@@ -39,7 +40,7 @@ def BB84(n, with_eavesdropper, with_losses,
     alice_key = np.random.randint(0, high=2**n) # Gen random number in available range of Qubits
     alice_key = np.binary_repr(alice_key, n) # Cast key to binary for encoding
 
-    # Encode key as alice qubitsD
+    # Encode key as alice qubits
     for index, digit in enumerate(alice_key):
         if digit == '1':
             alice.x(qr[index]) # If key has '1', change state to |1>
@@ -48,7 +49,7 @@ def BB84(n, with_eavesdropper, with_losses,
     alice_table = []
     for index in range(len(qr)):
         if 0.5 < np.random.random(): # 50% chance
-            if perturb_probability > np.random.random():
+            if with_perturbations and perturb_probability > np.random.random():
                 alice_table.append('Z')
                 continue
             else:
@@ -64,7 +65,7 @@ def BB84(n, with_eavesdropper, with_losses,
     bob_table = []
     for index in range(len(qr)):
         if 0.5 < np.random.random(): # 50% chance
-            if perturb_probability > np.random.random():
+            if with_perturbations and perturb_probability > np.random.random():
                 bob_table.append('Z')
                 continue
             else:
@@ -85,7 +86,7 @@ def BB84(n, with_eavesdropper, with_losses,
     bob_key = bob_key[::-1] # Key is reversed so first qubit is the first element
 
     # Discard bits
-    table_checks(alice_table, bob_table, alice_key, bob_key, with_eavesdropper, n)
+    table_checks(alice_table, bob_table, alice_key, bob_key, with_eavesdropper, n, 1.0)
     
     if with_eavesdropper:
         eve = QuantumCircuit(qr, cr, name='Eve')
@@ -94,7 +95,7 @@ def BB84(n, with_eavesdropper, with_losses,
         eve_table = []
         for index in range(len(qr)):
             if 0.5 < np.random.random():
-                if perturb_probability > np.random.random():
+                if with_perturbations and perturb_probability > np.random.random():
                     eve_table.append('Z')
                     continue
                 else:
@@ -132,7 +133,7 @@ def BB84(n, with_eavesdropper, with_losses,
         bob_table = []
         for index in range(len(qr)):
             if 0.5 < np.random.random():
-                if perturb_probability > np.random.random():
+                if with_perturbations and perturb_probability > np.random.random():
                     bob_table.append('Z')
                     continue
                 else:
@@ -150,13 +151,16 @@ def BB84(n, with_eavesdropper, with_losses,
         bob_key = bob_key[::-1]
 
         # Normal check
-        table_checks(alice_table, bob_table, alice_key, bob_key, with_eavesdropper, n)
+        table_checks(alice_table, bob_table, alice_key, bob_key, with_eavesdropper, n, detector_efficiency=1.0)
 
-def table_checks(table1, table2, key1, key2, with_eavesdropper, n):
+        end = time.time()
+        print('Time elapsed (s): ', end - start)
+
+def table_checks(table1, table2, key1, key2, with_eavesdropper, n, detector_efficiency):
     keep = []
     discard = []
     for qubit, basis in enumerate(zip(table1, table2)):
-        if basis[0] == basis[1]:
+        if detector_efficiency > np.random.random() and basis[0] == basis[1]:
             print("Same choice for qubit: {}, basis: {}" .format(qubit, basis[0])) 
             keep.append(qubit)
         else:
@@ -165,7 +169,7 @@ def table_checks(table1, table2, key1, key2, with_eavesdropper, n):
     
     acc = 0
     for bit in zip(key1, key2):
-        if bit[0] == bit[1]:
+        if bit[0] == bit[1] and detector_efficiency :
             acc += 1
     
     print('Percentage of qubits to be discarded according to table comparison: ', len(keep)/n)
@@ -385,9 +389,9 @@ class QuantumSimulatorApp:
 
     def run_simulation(self):
         if "BB84" == self.protocol:
-            BB84(int(self.num_qubits), self.settings["Eavesdropping Enabled"], self.settings["Losses Enabled"], self.settings["Perturbations Enabled"], 
-                self.settings["SOP Uncertainty Enabled"], self.system_parameters[0], self.system_parameters[1], self.system_parameters[2], self.system_parameters[3], 
-                self.system_parameters[4], float(self.system_parameters[5]), self.system_parameters[6])
+            BB84(int(float(self.system_parameters[1])*int(self.num_qubits)), self.settings["Eavesdropping Enabled"], self.settings["Losses Enabled"], self.settings["Perturbations Enabled"], 
+                self.settings["SOP Uncertainty Enabled"], self.system_parameters[0], self.system_parameters[2], self.system_parameters[3], 
+                float(self.system_parameters[4]), float(self.system_parameters[5]), self.system_parameters[6])
             # Need to save the results either by returning them or saving in a variable
             # Need Key Length, Key Rate, and QBER
         elif "TM99" == self.protocol:
