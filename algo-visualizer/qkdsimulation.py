@@ -19,6 +19,7 @@ from tkinter import ttk
 from qiskit import IBMQ, QuantumCircuit, Aer, execute, \
 	QuantumRegister, ClassicalRegister, BasicAer
 from qiskit.tools.visualization import circuit_drawer, plot_histogram, plot_bloch_multivector
+from qiskit_aer.noise import NoiseModel, amplitude_damping_error
 
 import numpy as np
 
@@ -32,6 +33,10 @@ def BB84(n, with_eavesdropper, with_losses,
         fiber_loss, detector_efficiency, 
         perturb_probability, sop_mean_deviation):
     start = time.time()
+    time_interval = 1 / source_generation_rate
+    if not with_losses:
+        fiber_length = 0 
+        fiber_loss = 0
     
     qr = QuantumRegister(n, name='qr')
     cr = ClassicalRegister(n, name='cr')
@@ -51,28 +56,34 @@ def BB84(n, with_eavesdropper, with_losses,
         if 0.5 < np.random.random(): # 50% chance
             if with_perturbations and perturb_probability > np.random.random():
                 alice_table.append('Z')
+                time.sleep(time_interval)
                 continue
             else:
                 alice.h(qr[index])
                 alice_table.append('X')
+                time.sleep(time_interval)
         else:
             alice_table.append('Z')
+            time.sleep(time_interval)
     
     # Need to send Alice's output state to Bob
     bob = QuantumCircuit(qr, cr, name='Bob')
-    SendState(alice, bob, qr)
+    SendState(alice, bob, qr, fiber_length, fiber_loss)
 
     bob_table = []
     for index in range(len(qr)):
         if 0.5 < np.random.random(): # 50% chance
             if with_perturbations and perturb_probability > np.random.random():
                 bob_table.append('Z')
+                time.sleep(time_interval)
                 continue
             else:
                 bob.h(qr[index])
                 bob_table.append('X')
+                time.sleep(time_interval)
         else:
             bob_table.append('Z')
+            time.sleep(time_interval)
 
     # Measure all qubits
     for index in range(len(qr)):
@@ -90,19 +101,22 @@ def BB84(n, with_eavesdropper, with_losses,
     
     if with_eavesdropper:
         eve = QuantumCircuit(qr, cr, name='Eve')
-        SendState(alice, eve, qr)
+        SendState(alice, eve, qr, fiber_length, fiber_loss)
 
         eve_table = []
         for index in range(len(qr)):
             if 0.5 < np.random.random():
                 if with_perturbations and perturb_probability > np.random.random():
                     eve_table.append('Z')
+                    time.sleep(time_interval)
                     continue
                 else:
                     eve.h(qr[index])
                     eve_table.append('X')
+                    time.sleep(time_interval)
             else:
                 eve_table.append('Z')
+                time.sleep(time_interval)
 
         for index in range(len(qr)):
             eve.measure(qr[index], cr[index])
@@ -128,19 +142,22 @@ def BB84(n, with_eavesdropper, with_losses,
                         eve.x(qr[qubit])
                         eve.h(qr[qubit])
 
-        SendState(eve, bob, qr)
+        SendState(eve, bob, qr, fiber_length, fiber_loss)
 
         bob_table = []
         for index in range(len(qr)):
             if 0.5 < np.random.random():
                 if with_perturbations and perturb_probability > np.random.random():
                     bob_table.append('Z')
+                    time.sleep(time_interval)
                     continue
                 else:
                     bob.h(qr[index])
                     bob_table.append('X')
+                    time.sleep(time_interval)
             else:
                 bob_table.append('Z')
+                time.sleep(time_interval)
 
         for index in range(len(qr)):
             bob.measure(qr[index], cr[index])
@@ -151,7 +168,7 @@ def BB84(n, with_eavesdropper, with_losses,
         bob_key = bob_key[::-1]
 
         # Normal check
-        table_checks(alice_table, bob_table, alice_key, bob_key, with_eavesdropper, n, detector_efficiency=1.0)
+        table_checks(alice_table, bob_table, alice_key, bob_key, with_eavesdropper, n, detector_efficiency)
 
         end = time.time()
         print('Time elapsed (s): ', end - start)
@@ -197,7 +214,7 @@ def table_checks(table1, table2, key1, key2, with_eavesdropper, n, detector_effi
         print("New Alice's key is invalid: ", new_alice_key)
         print("New Bob's key is invalid: ", new_bob_key)
 
-def SendState(qc1, qc2, qr):
+def SendState(qc1, qc2, qr, fiber_length, fiber_loss):
     ''' 
     * Function takes output of qc1 and initializes qc2 with the same state
     '''
@@ -219,6 +236,13 @@ def SendState(qc1, qc2, qr):
             pass
         else:
             raise Exception('Unable to parse instruction')
+
+    noise_model = NoiseModel()
+    damping_prob = 1 - np.exp(-fiber_loss)
+    for qubit in qr:
+        noise_model.add_quantum_error(amplitude_damping_error(damping_prob), ['id'], [qubit])
+    
+    qc2.noise_model = noise_model
 
 #BB84(24, True, True, True, True, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0)
 
@@ -390,8 +414,8 @@ class QuantumSimulatorApp:
     def run_simulation(self):
         if "BB84" == self.protocol:
             BB84(int(float(self.system_parameters[1])*int(self.num_qubits)), self.settings["Eavesdropping Enabled"], self.settings["Losses Enabled"], self.settings["Perturbations Enabled"], 
-                self.settings["SOP Uncertainty Enabled"], self.system_parameters[0], self.system_parameters[2], self.system_parameters[3], 
-                float(self.system_parameters[4]), float(self.system_parameters[5]), self.system_parameters[6])
+                self.settings["SOP Uncertainty Enabled"], float(self.system_parameters[0]), float(self.system_parameters[2]), float(self.system_parameters[3]), 
+                float(self.system_parameters[4]), float(self.system_parameters[5]), float(self.system_parameters[6]))
             # Need to save the results either by returning them or saving in a variable
             # Need Key Length, Key Rate, and QBER
         elif "TM99" == self.protocol:
